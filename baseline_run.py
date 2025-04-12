@@ -1,4 +1,3 @@
-# baseline_run.py
 import torch
 from torch import nn, optim
 from torchvision import datasets, transforms
@@ -7,10 +6,11 @@ from efficientnet_pytorch import EfficientNet
 from tqdm import tqdm
 import pickle
 
+# avoid using CPU it's taking years to run
 device = torch.device("mps" if torch.backends.mps.is_available() else "cpu")
 print(f"Using device: {device}")
 
-# Transforms (basic)
+# transforms
 transform_train = transforms.Compose([
     transforms.Resize((224, 224)),
     transforms.ToTensor(),  # removed horizontal flip
@@ -25,22 +25,22 @@ transform_test = transforms.Compose([
                          [0.229, 0.224, 0.225])
 ])
 
-# Dataset and loaders
+# dataset and loader
 train_dataset = datasets.CIFAR10(root='./data', train=True, download=True, transform=transform_train)
 test_dataset = datasets.CIFAR10(root='./data', train=False, download=True, transform=transform_test)
 train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True)
 test_loader = DataLoader(test_dataset, batch_size=64, shuffle=False)
 
-# Model setup
+# setting up model
 model = EfficientNet.from_pretrained('efficientnet-b0')
 model._fc = nn.Linear(model._fc.in_features, 10)
 model = model.to(device)
 
-# Loss and optimizer
+# defining loss, optimizer
 criterion = nn.CrossEntropyLoss()
 optimizer = optim.Adam(model.parameters(), lr=3e-4)
 
-# Train and eval functions
+# functions to train and evaluate
 def train(model, loader, criterion, optimizer):
     model.train()
     running_loss = 0
@@ -66,8 +66,8 @@ def evaluate(model, loader):
             total += labels.size(0)
     return 100 * correct / total
 
-# Training loop
-# Using basic transforms and 2 epochs to simulate a simple baseline setup
+# training loop
+# here we use basic transforms and 2 epochs to simulate a simple baseline setup
 baseline_accs = []
 for epoch in range(2):
     print(f"\nEpoch {epoch+1}/2")
@@ -76,7 +76,7 @@ for epoch in range(2):
     baseline_accs.append(acc)
     print(f"Train Loss: {loss:.4f} | Test Accuracy: {acc:.2f}%")
 
-# Save results
+# results
 with open("baseline_accs.pkl", "wb") as f:
     pickle.dump(baseline_accs, f)
 

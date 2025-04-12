@@ -8,11 +8,11 @@ from tqdm import tqdm
 import pickle
 import os
 
-# --- Device ---
+# again, DEFINITELY DO NOT USE CPU HERE IT WILL TAKE YEARS TO RUN
 device = torch.device("mps" if torch.backends.mps.is_available() else "cpu")
 print(f"Using device: {device}")
 
-# --- Transforms ---
+# transforms for training and testing
 transform_train = transforms.Compose([
     transforms.Resize((224, 224)),
     transforms.RandomCrop(224, padding=4),
@@ -29,17 +29,19 @@ transform_test = transforms.Compose([
                          [0.229, 0.224, 0.225])
 ])
 
-# --- Datasets ---
+# dataset
 train_dataset = datasets.CIFAR10(root='./data', train=True, download=True, transform=transform_train)
 test_dataset = datasets.CIFAR10(root='./data', train=False, download=True, transform=transform_test)
 train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True)
 test_loader = DataLoader(test_dataset, batch_size=64, shuffle=False)
 
-# --- Model ---
+# using the same model
 model = EfficientNet.from_pretrained('efficientnet-b0')
 model._fc = nn.Linear(model._fc.in_features, 10)
 
-# Freeze all layers, unfreeze only the last N blocks + classifier
+# freeze all layers, unfreeze only the last 9 blocks as defined, and also the classifier
+# this speeds up training a bit
+# also reduces overfitting 
 unfreeze_blocks = 9
 for param in model.parameters():
     param.requires_grad = False
@@ -50,12 +52,12 @@ for param in model._fc.parameters():
 
 model = model.to(device)
 
-# --- Loss, Optimizer, Scheduler ---
+# loss, optimizer, and scheduler
 criterion = nn.CrossEntropyLoss()
 optimizer = optim.Adam(filter(lambda p: p.requires_grad, model.parameters()), lr=2e-4)
 scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=3, gamma=0.5)
 
-# --- Training & Evaluation ---
+# training and evaluation functions
 def train(model, loader, criterion, optimizer, epoch):
     model.train()
     running_loss = 0
@@ -84,7 +86,8 @@ def evaluate(model, loader):
             total += labels.size(0)
     return 100 * correct / total
 
-# --- Training Loop with Early Stopping ---
+# adding more epochs for training, we also use early-stopping 
+# save the best epoch as well to get the best accuracy overall
 v3_accs = []
 EPOCHS = 7
 early_stop_patience = 2
@@ -99,24 +102,24 @@ for epoch in range(1, EPOCHS + 1):
     scheduler.step()
     print(f"Train Loss: {train_loss:.4f} | Test Accuracy: {acc:.2f}%")
 
-    # Track best
+    # logic to track the best
     if acc > best_acc:
         best_acc = acc
         best_epoch = epoch
         epochs_no_improve = 0
         torch.save(model.state_dict(), "best_model_v3.pth")
-        print("🔥 Best model saved.")
+        print("This is the best model so far, saving it.")
     else:
         epochs_no_improve += 1
         print(f"No improvement for {epochs_no_improve} epoch(s).")
 
-    # Early stopping
+    # early stopping logic
     if epochs_no_improve >= early_stop_patience:
-        print(f"\n⏹️ Early stopping at epoch {epoch}. Best Accuracy: {best_acc:.2f}% (Epoch {best_epoch})")
+        print(f"Early stopping here, at epoch {epoch}. Best Accuracy: {best_acc:.2f}% (Epoch {best_epoch})")
         break
 
-# --- Save accuracy history ---
+# save results
 with open("v3_accs.pkl", "wb") as f:
     pickle.dump(v3_accs, f)
 
-print(f"\n✅ Final Best Accuracy: {best_acc:.2f}% at Epoch {best_epoch}")
+print(f"Best Accuracy overall: {best_acc:.2f}% at Epoch {best_epoch}")
