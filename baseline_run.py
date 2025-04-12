@@ -13,11 +13,11 @@ print(f"Using device: {device}")
 # Transforms (basic)
 transform_train = transforms.Compose([
     transforms.Resize((224, 224)),
-    transforms.RandomHorizontalFlip(),
-    transforms.ToTensor(),
+    transforms.ToTensor(),  # removed horizontal flip
     transforms.Normalize([0.485, 0.456, 0.406],
                          [0.229, 0.224, 0.225])
 ])
+
 transform_test = transforms.Compose([
     transforms.Resize((224, 224)),
     transforms.ToTensor(),
@@ -38,7 +38,7 @@ model = model.to(device)
 
 # Loss and optimizer
 criterion = nn.CrossEntropyLoss()
-optimizer = optim.Adam(model.parameters(), lr=1e-4)
+optimizer = optim.Adam(model.parameters(), lr=3e-4)
 
 # Train and eval functions
 def train(model, loader, criterion, optimizer):
@@ -67,8 +67,9 @@ def evaluate(model, loader):
     return 100 * correct / total
 
 # Training loop
+# Using basic transforms and 2 epochs to simulate a simple baseline setup
 baseline_accs = []
-for epoch in range(3):
+for epoch in range(2):
     print(f"\nEpoch {epoch+1}/3")
     loss = train(model, train_loader, criterion, optimizer)
     acc = evaluate(model, test_loader)
