@@ -70,7 +70,7 @@ def evaluate(model, loader):
 # Using basic transforms and 2 epochs to simulate a simple baseline setup
 baseline_accs = []
 for epoch in range(2):
-    print(f"\nEpoch {epoch+1}/3")
+    print(f"\nEpoch {epoch+1}/2")
     loss = train(model, train_loader, criterion, optimizer)
     acc = evaluate(model, test_loader)
     baseline_accs.append(acc)

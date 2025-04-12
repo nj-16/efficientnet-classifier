@@ -86,8 +86,8 @@ def evaluate(model, loader):
 
 # --- Training Loop with Early Stopping ---
 v3_accs = []
-EPOCHS = 20
-early_stop_patience = 3
+EPOCHS = 7
+early_stop_patience = 2
 best_acc = 0
 best_epoch = 0
 epochs_no_improve = 0
