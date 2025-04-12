@@ -10,3 +10,5 @@
 **Improvements added:** Most important and relevant changes made are fine-tuning the last few layers of EfficientNet instead of the entire model, which made it better adapt to the dataset, without overfitting. Also added stronger data augmentation for more generalization. ALSO used a learning rate scheduler and applied early stopping to save processing time. This led to a noticeable boost in accuracy over the baseline. 
 
 **Dataset used:** Dataset used is CIFAR-10 dataset. Loaded using Pytorch's inbuilt "torchvision.datasets.CIFAR10", which automatically handles downloading and preprocessing
+
+**Report link:** https://github.com/nj-16/efficientnet-classifier/blob/main/report/AIDI1002_Project_Report.ipynb
