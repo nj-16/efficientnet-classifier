@@ -12,3 +12,8 @@
 **Dataset used:** Dataset used is CIFAR-10 dataset. Loaded using Pytorch's inbuilt "torchvision.datasets.CIFAR10", which automatically handles downloading and preprocessing
 
 **Report link:** https://github.com/nj-16/efficientnet-classifier/blob/main/report/AIDI1002_Project_Report.ipynb
+
+#### Steps to implement
+1) git clone the repository 
+2) Navigate to the cloned directory - cd efficientnet-classifier
+3) Run the mentioned script file - sh master.sh
